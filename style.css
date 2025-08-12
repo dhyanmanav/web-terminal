@@ -1,0 +1,302 @@
+:root {
+    --bg: #000;
+    --text: aqua;
+    --dim: #0b610b;
+    --header: #111;
+    --border: #333;
+    --error: #ff4444;
+    --warning: #ffaa00;
+    --info: #4488ff;
+    --success: #44ff44;
+    font-family: "Menlo", "Consolas", "Courier New", monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.terminal-container {
+    width: 95%;
+    max-width: 1200px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,.8);
+}
+
+.terminal-header {
+    background: var(--header);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.terminal-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.control {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.close { background: #ff5f56; }
+.minimize { background: #ffbd2e; }
+.maximize { background: #27c93f; }
+
+.terminal-title {
+    color: var(--dim);
+    font-size: 0.9rem;
+    flex: 1;
+    text-align: center;
+}
+
+.terminal-status {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--dim);
+}
+
+#system-status {
+    color: var(--success);
+}
+
+.terminal-body {
+    background: var(--bg);
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+    white-space: pre-wrap;
+    font-size: 14px;
+}
+
+.terminal-input-line {
+    padding: 6px 12px;
+    display: flex;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+}
+
+.prompt {
+    user-select: none;
+    color: var(--success);
+}
+
+.terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    outline: none;
+    font: inherit;
+}
+
+/* Error/Success/Warning Colors */
+.error { color: var(--error); }
+.success { color: var(--success); }
+.warning { color: var(--warning); }
+.info { color: var(--info); }
+
+/* File Editor Styles */
+.editor-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+}
+
+.editor-modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.editor-container {
+    width: 90%;
+    height: 80%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-header {
+    background: var(--header);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.editor-title {
+    color: var(--text);
+    font-weight: bold;
+}
+
+.editor-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.editor-btn {
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.editor-btn:hover {
+    background: var(--dim);
+}
+
+.editor-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.line-numbers {
+    background: var(--header);
+    color: var(--dim);
+    padding: 10px 8px;
+    text-align: right;
+    min-width: 50px;
+    font-size: 12px;
+    border-right: 1px solid var(--border);
+    user-select: none;
+}
+
+.editor-content {
+    flex: 1;
+    background: var(--bg);
+    color: var(--text);
+    border: none;
+    outline: none;
+    font: inherit;
+    padding: 10px;
+    resize: none;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.editor-footer {
+    background: var(--header);
+    padding: 4px 12px;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--dim);
+}
+
+/* Password Modal */
+.password-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1001;
+}
+
+.password-modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.password-container {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    min-width: 300px;
+    text-align: center;
+}
+
+.password-container h3 {
+    margin-top: 0;
+    color: var(--text);
+}
+
+#password-input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    background: var(--header);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 3px;
+    font: inherit;
+}
+
+.password-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.password-buttons button {
+    background: var(--border);
+    color: var(--text);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.password-buttons button:hover {
+    background: var(--dim);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-track { background: #111; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .terminal-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .editor-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+}

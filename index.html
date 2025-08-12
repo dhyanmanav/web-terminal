@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manav Web Terminal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-controls">
+                <span class="control close"></span>
+                <span class="control minimize"></span>
+                <span class="control maximize"></span>
+            </div>
+            <div class="terminal-title">MANAV SHELL</div>
+            <div class="terminal-status">
+                <span id="user-info">user@terminal</span>
+                <span id="system-status">●</span>
+            </div>
+        </div>
+
+        <div class="terminal-body" id="terminal">
+            <div class="terminal-output" id="output">
+                <div class="welcome-message">
+                    <p>MANAV TERMINAL</p>
+                    <p>Type 'help' to see available commands.</p>
+                    <p></p>
+                </div>
+            </div>
+
+            <div class="terminal-input-line">
+                <span class="prompt" id="prompt">user@terminal:~$ </span>
+                <input type="text" class="terminal-input" id="input" autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+    </div>
+
+    <!-- File Editor Modal -->
+    <div class="editor-modal" id="editor-modal">
+        <div class="editor-container">
+            <div class="editor-header">
+                <span class="editor-title" id="editor-title">nano - New File</span>
+                <div class="editor-controls">
+                    <button class="editor-btn" id="save-btn">Save (Ctrl+S)</button>
+                    <button class="editor-btn" id="exit-btn">Exit (Ctrl+X)</button>
+                </div>
+            </div>
+            <div class="editor-body">
+                <div class="line-numbers" id="line-numbers"></div>
+                <textarea class="editor-content" id="editor-content" spellcheck="false"></textarea>
+            </div>
+            <div class="editor-footer">
+                <span id="editor-status">Ready</span>
+                <span id="editor-position">Line 1, Col 1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="password-modal" id="password-modal">
+        <div class="password-container">
+            <h3 id="password-title">Enter Password</h3>
+            <input type="password" id="password-input" placeholder="Password">
+            <div class="password-buttons">
+                <button id="password-ok">OK</button>
+                <button id="password-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
