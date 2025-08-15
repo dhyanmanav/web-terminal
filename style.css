@@ -300,3 +300,24 @@ body {
         border-radius: 0;
     }
 }
+/* ==== Voice UI Styling (Additive) ==== */
+.voice-controls {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 10px 15px;
+    border: 1px solid var(--primary, #3498db);
+}
+.voice-btn:hover {
+    transform: scale(1.1);
+    background: var(--primary, #3498db) !important;
+    color: var(--background, #fff) !important;
+}
+.voice-btn:active {
+    transform: scale(0.95);
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,193,7,0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255,193,7,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,193,7,0); }
+}

@@ -66,6 +66,24 @@ class EnhancedTerminal {
         this.systemUptime = new Date();
         this.isAuthenticated = true;
         
+        /*voice*/
+        /* === Voice Recognition Properties (Additive) === */
+        this.isVoiceActive = false;
+        this.speechRecognition = null;
+        this.voiceButton = null;
+        this.lastSpokenCommand = '';
+        this.voiceAliases = {
+        'sudo mode': 'su root',
+        'become root': 'sudo su',
+        'install package': 'sudo apt install',
+        'update system': 'sudo apt update && sudo apt upgrade',
+        'check disk space': 'df -h',
+        'show running processes': 'ps aux',
+        'network status': 'ping google.com'
+        };
+        this.initVoiceRecognition();
+
+
         /* --- Authentication --- */
         this.users = {
             user: { password: this.hashPassword("user123"), home: "/home/user", shell: "/bin/bash" },
@@ -105,6 +123,201 @@ class EnhancedTerminal {
         this.startSystemProcesses();
         this.$input.focus();
     }
+    /* === Voice Recognition Initialization (Additive) === */
+initVoiceRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        this.echo("Voice recognition not supported in this browser", "error");
+        return;
+    }
+    this.speechRecognition = new SpeechRecognition();
+    this.speechRecognition.continuous = false;
+    this.speechRecognition.interimResults = false;
+    this.speechRecognition.lang = 'en-US';
+    this.speechRecognition.maxAlternatives = 1;
+
+    this.bindVoiceEvents();
+    this.createVoiceUI();
+}
+/* === Voice UI (Additive) === */
+createVoiceUI() {
+    const voiceContainer = document.createElement('div');
+    voiceContainer.className = 'voice-controls';
+    voiceContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    `;
+    this.voiceButton = document.createElement('button');
+    this.voiceButton.innerHTML = '🎤';
+    this.voiceButton.title = 'Click to speak command or press Ctrl+Space';
+    this.voiceButton.className = 'voice-btn';
+    this.voiceButton.style.cssText = `
+        padding: 10px;
+        border: 2px solid var(--primary);
+        background: var(--background);
+        color: var(--primary);
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    `;
+    const voiceStatus = document.createElement('span');
+    voiceStatus.id = 'voice-status';
+    voiceStatus.textContent = 'Voice: Ready';
+    voiceStatus.style.cssText = `
+        color: var(--success);
+        font-size: 14px;
+        font-weight: bold;
+    `;
+    voiceContainer.appendChild(this.voiceButton);
+    voiceContainer.appendChild(voiceStatus);
+    document.body.appendChild(voiceContainer);
+
+    this.voiceButton.addEventListener('click', () => this.toggleVoiceRecognition());
+}
+    /* === Bind Speech Events (Additive) === */
+bindVoiceEvents() {
+    if (!this.speechRecognition) return;
+
+    this.speechRecognition.onstart = () => {
+        this.isVoiceActive = true;
+        this.updateVoiceStatus('Listening...', 'var(--warning)');
+        this.voiceButton.style.background = 'var(--warning)';
+        this.voiceButton.innerHTML = '🔴';
+    };
+
+    this.speechRecognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+        const confidence = event.results[0][0].confidence;
+        this.lastSpokenCommand = transcript;
+        this.echo(
+            `🎤 Voice Command: "${transcript}" (${Math.round(confidence * 100)}% confidence)`,
+            "info"
+        );
+        this.processVoiceCommand(transcript);
+    };
+
+    this.speechRecognition.onend = () => {
+        this.isVoiceActive = false;
+        this.updateVoiceStatus('Voice: Ready', 'var(--success)');
+        this.voiceButton.style.background = 'var(--background)';
+        this.voiceButton.innerHTML = '🎤';
+    };
+
+    this.speechRecognition.onerror = (event) => {
+        this.isVoiceActive = false;
+        this.updateVoiceStatus(`Voice Error: ${event.error}`, 'var(--error)');
+        this.voiceButton.style.background = 'var(--background)';
+        this.voiceButton.innerHTML = '🎤';
+        if (event.error === 'not-allowed') {
+            this.echo(
+                "Microphone access denied. Please allow microphone permissions.",
+                "error"
+            );
+        }
+    };
+
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.code === 'Space') {
+            e.preventDefault();
+            this.toggleVoiceRecognition();
+        }
+    });
+}
+
+    /* === Voice Command Natural Language Processor (Additive) === */
+processVoiceCommand(transcript) {
+    const command = transcript.toLowerCase();
+    let processedCommand = '';
+    if (command in this.voiceAliases) {
+        processedCommand = this.voiceAliases[command];
+    } else if (command.includes('list files') || command.includes('show files')) {
+        processedCommand = 'ls -la';
+    } else if (command.includes('change directory to') || command.includes('go to')) {
+        const dirMatch = command.match(/(?:change directory to|go to)\s+(.+)/);
+        if (dirMatch) {
+            processedCommand = `cd ${dirMatch[1].replace(/\s+/g, '_')}`;
+        }
+    } else if (command.includes('create directory') || command.includes('make directory')) {
+        const dirMatch = command.match(/(?:create directory|make directory)\s+(.+)/);
+        if (dirMatch) {
+            processedCommand = `mkdir ${dirMatch[1].replace(/\s+/g, '_')}`;
+        }
+    } else if (command.includes('create file') || command.includes('make file')) {
+        const fileMatch = command.match(/(?:create file|make file)\s+(.+)/);
+        if (fileMatch) {
+            processedCommand = `touch ${fileMatch[1].replace(/\s+/g, '_')}`;
+        }
+    } else if (command.includes('edit file')) {
+        const fileMatch = command.match(/edit file\s+(.+)/);
+        if (fileMatch) {
+            processedCommand = `nano ${fileMatch[1].replace(/\s+/g, '_')}`;
+        }
+    } else if (command.includes('delete file') || command.includes('remove file')) {
+        const fileMatch = command.match(/(?:delete file|remove file)\s+(.+)/);
+        if (fileMatch) {
+            processedCommand = `rm ${fileMatch[1].replace(/\s+/g, '_')}`;
+        }
+    } else if (command.includes('clear screen') || command === 'clear') {
+        processedCommand = 'clear';
+    } else if (command.includes('show current directory') || command.includes('where am i')) {
+        processedCommand = 'pwd';
+    } else if (command.includes('show history')) {
+        processedCommand = 'history';
+    } else if (command.includes('who am i') || command.includes('current user')) {
+        processedCommand = 'whoami';
+    } else if (command.includes('go back')) {
+        processedCommand = 'cd ..';
+    } else if (command.includes('go home')) {
+        processedCommand = 'cd ~';
+    } else if (command.includes('list all')) {
+        processedCommand = 'ls -la';
+    } else {
+        processedCommand = transcript;
+    }
+
+    if (processedCommand) {
+        if (processedCommand !== transcript) {
+            this.echo(`→ Translated to: ${processedCommand}`, "success");
+        }
+        this.$input.value = processedCommand;
+        setTimeout(() => {
+            this.interpret(processedCommand);
+            this.$input.value = '';
+        }, 500);
+    } else {
+        this.echo("Voice command not recognized. Try saying 'list files' or 'clear screen'", "warning");
+    }
+}
+    /* === Voice Toggle and Status (Additive) === */
+toggleVoiceRecognition() {
+    if (!this.speechRecognition) {
+        this.echo("Speech recognition not available", "error");
+        return;
+    }
+    if (this.isVoiceActive) {
+        this.speechRecognition.stop();
+    } else {
+        try {
+            this.speechRecognition.start();
+        } catch (error) {
+            this.echo(`Voice recognition error: ${error.message}`, "error");
+        }
+    }
+}
+
+updateVoiceStatus(text, color) {
+    const status = document.getElementById('voice-status');
+    if (status) {
+        status.textContent = text;
+        status.style.color = color;
+    }
+}
 
     /* ========= Authentication System ========= */
     hashPassword(password) {
@@ -1215,7 +1428,21 @@ Tips:
 - Use Up/Down arrows for command history
 - Use Ctrl+C to cancel current input
 - Use Ctrl+L to clear screen
-- Default passwords: user123, root123`);
+- Default passwords: user123, root123
+
+Voice Commands Click 🎤 or press Ctrl+Space:
+- "list files" → ls -la
+- "change directory to [name]" → cd [name]
+- "create directory [name]" → mkdir [name]
+- "create file [name]" → touch [name]
+- "edit file [name]" → nano [name]
+- "delete file [name]" → rm [name]
+- "clear screen" → clear
+- "show current directory" → pwd
+- "show history" → history
+- "who am i" → whoami
+Or speak any terminal command directly!
+`);
     }
 
     /* ========= Autocomplete ========= */
