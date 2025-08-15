@@ -248,7 +248,8 @@ processVoiceCommand(transcript) {
         if (dirMatch) {
             processedCommand = `mkdir ${dirMatch[1].replace(/\s+/g, '_')}`;
         }
-    } else if (command.includes('create file') || command.includes('make file')) {
+    } 
+     else if (command.includes('create file') || command.includes('make file')) {
         const fileMatch = command.match(/(?:create file|make file)\s+(.+)/);
         if (fileMatch) {
             processedCommand = `touch ${fileMatch[1].replace(/\s+/g, '_')}`;
@@ -265,7 +266,10 @@ processVoiceCommand(transcript) {
         }
     } else if (command.includes('clear screen') || command === 'clear') {
         processedCommand = 'clear';
-    } else if (command.includes('show current directory') || command.includes('where am i')) {
+    } 
+    else if (command.includes('todays date') || command.includes('date')) {
+        processedCommand = 'date';
+    }else if (command.includes('show current directory') || command.includes('where am i')) {
         processedCommand = 'pwd';
     } else if (command.includes('show history')) {
         processedCommand = 'history';
