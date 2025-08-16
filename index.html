@@ -73,6 +73,12 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js">
+        // Register the service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+
+    </script>
 </body>
 </html>

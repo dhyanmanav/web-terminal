@@ -1491,7 +1491,3 @@ window.addEventListener("DOMContentLoaded", () => {
     new EnhancedTerminal();
 });
 
-// Register the service worker for PWA functionality
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
-}
