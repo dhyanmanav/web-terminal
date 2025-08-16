@@ -1,0 +1,22 @@
+{
+  "name": "Manav Custom Terminal",
+  "short_name": "Terminal",
+  "description": "Voice-controlled terminal emulator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00ff00",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "C:/Users/Admin/Desktop/Web terminal/terminal.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "C:/Users/Admin/Desktop/Web terminal/terminal (1).png", 
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
