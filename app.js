@@ -254,7 +254,13 @@ processVoiceCommand(transcript) {
         if (fileMatch) {
             processedCommand = `touch ${fileMatch[1].replace(/\s+/g, '_')}`;
         }
-    } else if (command.includes('edit file')) {
+    }  else if (command.includes('show file content') || command.includes('show file')) {
+        const fileMatch = command.match(/(?:show file content|show file)\s+(.+)/);
+        if (fileMatch) {
+            processedCommand = `cat ${fileMatch[1].replace(/\s+/g, '_')}`;
+        }
+    } 
+    else if (command.includes('edit file')) {
         const fileMatch = command.match(/edit file\s+(.+)/);
         if (fileMatch) {
             processedCommand = `nano ${fileMatch[1].replace(/\s+/g, '_')}`;
@@ -1449,6 +1455,7 @@ Voice Commands Click 🎤 or press Ctrl+Space:
 - "create directory [name]" → mkdir [name]
 - "create file [name]" → touch [name]
 - "edit file [name]" → nano [name]
+- "show file content [file name] -> cat [name]
 - "delete file [name]" → rm [name]
 - "clear screen" → clear
 - "show current directory" → pwd
