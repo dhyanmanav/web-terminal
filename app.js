@@ -271,7 +271,11 @@ processVoiceCommand(transcript) {
         processedCommand = 'date';
     }else if (command.includes('show current directory') || command.includes('where am i')) {
         processedCommand = 'pwd';
-    } else if (command.includes('show history')) {
+    } 
+    else if (command.includes('user manual') || command.includes('help')) {
+        processedCommand = 'help';
+    }
+    else if (command.includes('show history')) {
         processedCommand = 'history';
     } else if (command.includes('who am i') || command.includes('current user')) {
         processedCommand = 'whoami';
@@ -1435,6 +1439,8 @@ Tips:
 - Default passwords: user123, root123
 
 Voice Commands Click 🎤 or press Ctrl+Space:
+- "user manual or help" -> help
+- "date or todays date" -> date
 - "list files" → ls -la
 - "change directory to [name]" → cd [name]
 - "create directory [name]" → mkdir [name]
