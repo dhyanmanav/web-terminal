@@ -272,7 +272,7 @@ processVoiceCommand(transcript) {
     }else if (command.includes('show current directory') || command.includes('where am i')) {
         processedCommand = 'pwd';
     } 
-    else if (command.includes('user manual') || command.includes('help')) {
+    else if (command.includes('manual') || command.includes('help')) {
         processedCommand = 'help';
     }
     else if (command.includes('show history')) {
