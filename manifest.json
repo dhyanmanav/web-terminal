@@ -9,12 +9,12 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "C:/Users/Admin/Desktop/Web terminal/terminal.png",
+      "src": "/terminal.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "C:/Users/Admin/Desktop/Web terminal/terminal (1).png", 
+      "src": "/terminal-512.png", 
       "sizes": "512x512",
       "type": "image/png"
     }
