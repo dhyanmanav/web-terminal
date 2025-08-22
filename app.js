@@ -1506,3 +1506,9 @@ Or speak any terminal command directly!
 window.addEventListener("DOMContentLoaded", () => {
     new EnhancedTerminal();
 });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js");
+  });
+}
