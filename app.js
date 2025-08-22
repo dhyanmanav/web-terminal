@@ -89,7 +89,7 @@ class EnhancedTerminal {
             user: { password: this.hashPassword("user123"), home: "/home/user", shell: "/bin/bash" },
             root: { password: this.hashPassword("root123"), home: "/root", shell: "/bin/bash" }
         };
-
+        localStorage.removeItem('terminal_passwords');
         /* --- Load saved passwords --- */
         const savedPasswords = localStorage.getItem('terminal_passwords');
         if (savedPasswords) {
@@ -343,7 +343,8 @@ updateVoiceStatus(text, color) {
         for (let i = 0; i < password.length; i++) {
             const char = password.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32-bit integer
+            hash = hash >>> 0; // fixed
+ // Convert to 32-bit integer
         }
         return hash.toString();
     }
