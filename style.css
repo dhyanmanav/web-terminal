@@ -322,3 +322,39 @@ body {
     70% { box-shadow: 0 0 0 10px rgba(255,193,7,0); }
     100% { box-shadow: 0 0 0 0 rgba(255,193,7,0); }
 }
+@media (max-width: 480px) {
+    .terminal-input-line {
+        padding: 4px 8px;
+    }
+    .terminal-input {
+        font-size: 12px;
+    }
+    .terminal-title {
+        font-size: 0.8rem;
+    }
+    .editor-container {
+        padding: 10px;
+    }
+    .terminal-header {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .terminal-controls {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+    .terminal-title {
+        order: 1;
+        flex-basis: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+    }
+}
+/* Instead of height: 80vh, use min-height with flex-grow behavior */
+.terminal-body {
+    min-height: 60vh;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}

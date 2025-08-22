@@ -1357,29 +1357,30 @@ updateVoiceStatus(text, color) {
     }
 
     cmdRmdir(args) {
-        if (!args.length) return this.echo("rmdir: missing operand", "error");
-        
-        args.forEach(name => {
-            const path = this.resolve(name);
-            const dir = this.node(path);
-            
-            if (!dir || dir.type !== "dir") {
-                return this.echo(`rmdir: failed to remove '${name}': No such directory`, "error");
-            }
-            
-            if (Object.keys(dir.contents).length) {
-                return this.echo(`rmdir: failed to remove '${name}': Directory not empty`, "error");
-            }
-            
-            if (dir.owner !== this.user && !this.isRoot) {
-                return this.echo(`rmdir: failed to remove '${name}': Permission denied`, "error");
-            }
-            
-            const parentPath = path.replace(/\/[^/]+$/, "") || "/";
-            const base = name.split("/").pop();
-            delete this.node(parentPath).contents[base];
-        });
+    if (!args.length) return this.echo("rmdir: missing operand", "error");
+
+    for (const name of args) {
+        const path = this.resolve(name);
+        const dir = this.node(path);
+
+        if (!dir || dir.type !== "dir") {
+            return this.echo(`rmdir: failed to remove '${name}': No such directory`, "error");
+        }
+
+        if (Object.keys(dir.contents).length) {
+            return this.echo(`rmdir: failed to remove '${name}': Directory not empty`, "error");
+        }
+
+        if (dir.owner !== this.user && !this.isRoot) {
+            return this.echo(`rmdir: failed to remove '${name}': Permission denied`, "error");
+        }
+
+        const parentPath = path.replace(/\/[^/]+$/, "") || "/";
+        const base = name.split("/").pop();
+        delete this.node(parentPath).contents[base];
     }
+}
+
 
     cmdClear() {
         this.$output.innerHTML = "";
