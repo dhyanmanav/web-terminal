@@ -122,7 +122,391 @@ class EnhancedTerminal {
         this.bindEvents();
         this.startSystemProcesses();
         this.$input.focus();
+
+        
+    // ... your existing constructor code ...
+
+    // Natural Language Input Properties
+    this.nlInput = null;
+    this.nlSubmitBtn = null;
+    this.nlStatus = null;
+
+    // Initialize natural language input components
+    this.initNaturalLanguageInput();
+
+
+
+}
+
+   /* --- Natural Language Text Input Initialization --- */
+initNaturalLanguageInput() {
+    // Get input, button, and status elements
+    this.nlInput = document.getElementById('nl-input');
+    this.nlSubmitBtn = document.getElementById('nl-submit-btn');
+    this.nlStatus = document.getElementById('nl-status');
+
+    if (!this.nlInput || !this.nlSubmitBtn || !this.nlStatus) {
+        console.warn('Natural language input elements not found');
+        return;
     }
+
+    this.bindNaturalLanguageEvents();
+}
+
+/* --- Bind Events for Natural Language Input --- */
+bindNaturalLanguageEvents() {
+    this.nlSubmitBtn.addEventListener('click', () => {
+        this.processNaturalLanguageInput();
+    });
+
+    this.nlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.processNaturalLanguageInput();
+        }
+    });
+
+    this.nlInput.addEventListener('input', () => {
+        const text = this.nlInput.value.trim();
+        if (text.length > 0) {
+            this.updateNLStatus('Type Enter or click 🔄 to convert', 'var(--warning)');
+        } else {
+            this.updateNLStatus('Ready for natural language input', 'var(--success)');
+        }
+    });
+
+    this.nlInput.addEventListener('focus', () => {
+        this.nlInput.parentElement.style.boxShadow = '0 4px 20px rgba(0, 255, 0, 0.4)';
+    });
+
+    this.nlInput.addEventListener('blur', () => {
+        this.nlInput.parentElement.style.boxShadow = '0 4px 15px rgba(0, 255, 0, 0.2)';
+    });
+}
+
+/* --- Process the natural language input --- */
+processNaturalLanguageInput() {
+    const naturalText = this.nlInput.value.trim();
+    if (!naturalText) {
+        this.updateNLStatus('Please enter some text', 'var(--error)');
+        return;
+    }
+
+    this.updateNLStatus('Converting...', 'var(--warning)');
+    this.nlSubmitBtn.innerHTML = '⏳';
+
+    const command = this.processNaturalLanguageCommand(naturalText);
+
+    if (command && command !== naturalText.toLowerCase()) {
+        // Show translated command and execute it
+        this.echo(`💬 Natural Language: "${naturalText}"`, "info");
+        this.echo(`→ Converted to: ${command}`, "success");
+
+        this.$input.value = command;
+        setTimeout(() => {
+            this.interpret(command);
+            this.$input.value = '';
+        }, 800);
+
+        this.updateNLStatus('✅ Converted successfully!', 'var(--success)');
+        this.nlInput.parentElement.classList.add('nl-success-animation');
+        setTimeout(() => {
+            this.nlInput.parentElement.classList.remove('nl-success-animation');
+        }, 600);
+
+        this.nlInput.value = '';
+
+    } else if (command === naturalText.toLowerCase()) {
+        // Input is already a direct command
+        this.echo(`💬 Command: "${naturalText}"`, "info");
+        this.$input.value = command;
+        setTimeout(() => {
+            this.interpret(command);
+            this.$input.value = '';
+        }, 500);
+
+        this.updateNLStatus('✅ Command executed!', 'var(--success)');
+        this.nlInput.value = '';
+
+    } else {
+        // Unrecognized input
+        this.updateNLStatus('❌ Command not recognized', 'var(--error)');
+        this.echo(`💬 "${naturalText}" not recognized. Try: "list files", "create file test.txt", "go to documents"`, "warning");
+    }
+
+    // Reset button icon after delay
+    setTimeout(() => {
+        this.nlSubmitBtn.innerHTML = '🔄';
+        if (this.nlInput.value.trim() === '') {
+            this.updateNLStatus('Ready for natural language input', 'var(--success)');
+        }
+    }, 2000);
+}
+
+/* --- Natural Language Command Regex Patterns --- */
+processNaturalLanguageCommand(text) {
+    const command = text.toLowerCase().trim();
+
+    // Check direct voice aliases first
+    if (command in this.voiceAliases) {
+        return this.voiceAliases[command];
+    }
+
+    // HELP / MANUAL
+    if (/\b(user manual|manual|help|show help|commands|what can i do|show commands|list commands|available commands)\b/i.test(command)) {
+        return "help";
+    }
+
+    // FILE LISTING
+    if (/\b(list files?|list all files?|display files?|what files are here|files|contents|dir|directory contents?)\b/i.test(command)) {
+        return "ls -la";
+    }
+    if (/\b(list|show)\s+(files?\s+)?(with\s+)?(details?|long\s+format)\b/i.test(command)) {
+        return "ls -l";
+    }
+    if (/\b(list|show)\s+hidden\s+files?\b/i.test(command)) {
+        return "ls -la";
+    }
+
+    // DIRECTORY NAVIGATION
+    if (/\b(where am i|current directory|current location|show current directory|present working directory|current path|where)\b/i.test(command)) {
+        return "pwd";
+    }
+    let cdMatch = command.match(/\b(?:change directory to|go to|navigate to|cd to|enter|open directory) (.+)/i)
+               || command.match(/\b(?:go|cd) (.+)/i);
+    if (cdMatch) {
+        return `cd ${cdMatch[1].replace(/\s+/g, '_')}`;
+    }
+    if (/\b(go back|go up|back|up one level|parent directory)\b/i.test(command)) {
+        return "cd ..";
+    }
+    if (/\b(go home|home directory|home)\b/i.test(command)) {
+        return "cd ~";
+    }
+
+    // USER IDENTIFICATION
+    if (/\b(who am i|current user|username|show user|my username|user)\b/i.test(command)) {
+        return "whoami";
+    }
+
+    // DATE & TIME
+    if (/\b(date|time|current date|current time|what time|todays? date|show date|show time)\b/i.test(command)) {
+        return "date";
+    }
+
+    // CLEAR SCREEN
+    if (/\b(clear|clear screen|clean screen|cls|clear terminal)\b/i.test(command)) {
+        return "clear";
+    }
+
+    // COMMAND HISTORY
+    if (/\b(history|command history|show history|previous commands|past commands)\b/i.test(command)) {
+        return "history";
+    }
+
+    // FILE VIEWING / READING
+    let fileViewMatch = command.match(/\b(?:show file content|show file|view file|read file|display file|cat file|open file) (?:of )?([^\s]+)/i)
+                     || command.match(/\b(?:show|view|read|display|cat|open) (?:file )?([^\s]+)/i)
+                     || command.match(/\b(?:content of|contents of) ([^\s]+)/i);
+    if (fileViewMatch) {
+        return `cat ${fileViewMatch[1]}`;
+    }
+
+    // FILE CREATION
+    let createFileMatch = command.match(/\b(?:create|make|new|touch) (?:file )?([^\s]+)/i);
+    if (createFileMatch) {
+        return `touch ${createFileMatch[1]}`;
+    }
+
+    // DIRECTORY CREATION
+    let mkdirMatch = command.match(/\b(?:create|make|new) (?:directory|folder|dir) ([^\s]+)/i)
+                  || command.match(/\bmkdir ([^\s]+)/i);
+    if (mkdirMatch) {
+        return `mkdir ${mkdirMatch[1]}`;
+    }
+
+    // FILE EDITING
+    let editMatch = command.match(/\b(?:edit|modify|change) (?:file )?([^\s]+)/i)
+                 || command.match(/\b(?:nano|vim|editor) ([^\s]+)/i)
+                 || command.match(/\bopen ([^\s]+) (?:in )?(editor|nano|vim)/i);
+    if (editMatch) {
+        return `nano ${editMatch[1]}`;
+    }
+
+    // FILE DELETION
+    let deleteFileMatch = command.match(/\b(?:delete|remove|rm) (?:file )?([^\s]+)/i);
+    if (deleteFileMatch) {
+        return `rm ${deleteFileMatch[1]}`;
+    }
+
+    // DIRECTORY DELETION
+    let deleteDirMatch = command.match(/\b(?:delete|remove|rm) (?:directory|folder|dir) ([^\s]+)/i)
+                      || command.match(/\brmdir ([^\s]+)/i);
+    if (deleteDirMatch) {
+        return `rmdir ${deleteDirMatch[1]}`;
+    }
+
+    // FILE COPYING
+    let copyMatch = command.match(/\b(?:copy|cp) ([^\s]+) (?:to )?([^\s]+)/i);
+    if (copyMatch) {
+        return `cp ${copyMatch[1]} ${copyMatch[1]}`;
+    }
+
+    // FILE MOVING/RENAMING
+    let moveMatch = command.match(/\b(?:move|mv|rename) ([^\s]+) (?:to )?([^\s]+)/i);
+    if (moveMatch) {
+        return `mv ${moveMatch[1]} ${moveMatch[1]}`;
+    }
+
+    // FILE SEARCHING
+    let findMatch = command.match(/\b(?:find|search for|locate) (?:file )?([^\s]+)/i);
+    if (findMatch) {
+        return `find . -name "${findMatch[1]}"`;
+    }
+
+    let grepMatch = command.match(/\b(?:search|grep|find) (?:for )?([^\s]+) (?:in )?([^\s]+)/i);
+    if (grepMatch) {
+        return `grep ${grepMatch[1]} ${grepMatch[1]}`;
+    }
+
+    // FILE PERMISSIONS
+    let chmodMatch = command.match(/\b(?:change permissions?|chmod) ([0-7]{3}) (?:of |for )?([^\s]+)/i);
+    if (chmodMatch) {
+        return `chmod ${chmodMatch[1]} ${chmodMatch[1]}`;
+    }
+
+    // SYSTEM INFORMATION
+    if (/\b(show processes?|list processes?|running processes?|ps|process list)\b/i.test(command)) {
+        return "ps aux";
+    }
+
+    let killMatch = command.match(/\b(?:kill|stop|terminate) (?:process )?([0-9]+)/i);
+    if (killMatch) {
+        return `kill ${killMatch[1]}`;
+    }
+
+    if (/\b(disk space|storage|disk usage|df|free space)\b/i.test(command)) {
+        return "df -h";
+    }
+
+    if (/\b(memory|ram|memory usage|free memory)\b/i.test(command)) {
+        return "free -h";
+    }
+
+    if (/\b(uptime|system uptime|how long running)\b/i.test(command)) {
+        return "uptime";
+    }
+
+    if (/\b(users|list users|show users|who)\b/i.test(command)) {
+        return "users";
+    }
+
+    if (/\b(groups|user groups|show groups)\b/i.test(command)) {
+        return "groups";
+    }
+
+    // DIRECTORY TREE
+    if (/\b(tree|directory tree|folder tree|show tree)\b/i.test(command)) {
+        return "tree";
+    }
+
+    let treeMatch = command.match(/\b(?:tree|show tree) (?:of )?([^\s]+)/i);
+    if (treeMatch) {
+        return `tree ${treeMatch[1]}`;
+    }
+
+    // DISK USAGE
+    let duMatch = command.match(/\b(disk usage|du|size) (?:of )?([^\s]+)/i);
+    if (duMatch) {
+        return `du -h ${duMatch[9]}`;
+    }
+
+    // FILE HEAD/TAIL
+    let headMatch = command.match(/\b(head|first lines?|beginning) (?:of )?([^\s]+)/i)
+                 || command.match(/\b(show first|first) ([0-9]+) (?:lines? )?(?:of )?([^\s]+)/i);
+    if (headMatch) {
+        if (headMatch[10]) {
+            return `head -n ${headMatch[9]} ${headMatch[10]}`;
+        }
+        return `head ${headMatch[1]}`;
+    }
+
+    let tailMatch = command.match(/\b(tail|last lines?|end) (?:of )?([^\s]+)/i)
+                 || command.match(/\b(show last|last) ([0-9]+) (?:lines? )?(?:of )?([^\s]+)/i);
+    if (tailMatch) {
+        if (tailMatch[10]) {
+            return `tail -n ${tailMatch[1]} ${tailMatch[1]}`;
+        }
+        return `tail ${tailMatch[1]}`;
+    }
+
+    // WORD COUNT
+    let wcMatch = command.match(/\b(word count|line count|count|wc) (?:of )?([^\s]+)/i);
+    if (wcMatch) {
+        return `wc ${wcMatch[1]}`;
+    }
+
+    // NETWORK COMMANDS
+    let pingMatch = command.match(/\b(ping|test connection|check connection) (?:to )?([^\s]+)/i);
+    if (pingMatch) {
+        return `ping ${pingMatch[1]}`;
+    }
+
+    let wgetMatch = command.match(/\b(download|wget|get) ([^\s]+)/i);
+    if (wgetMatch) {
+        return `wget ${wgetMatch[1]}`;
+    }
+
+    let curlMatch = command.match(/\b(curl|http request|web request) ([^\s]+)/i);
+    if (curlMatch) {
+        return `curl ${curlMatch[1]}`;
+    }
+
+    // SYSTEM ADMINISTRATION
+    if (/\b(become root|switch to root|root access|sudo mode)\b/i.test(command)) {
+        return "su root";
+    }
+
+    if (/\b(exit|logout|quit|leave)\b/i.test(command)) {
+        return "exit";
+    }
+
+    if (/\b(restart|reboot|reboot system)\b/i.test(command)) {
+        return "reboot";
+    }
+
+    if (/\b(shutdown|power off|turn off)\b/i.test(command)) {
+        return "shutdown";
+    }
+
+    let passwdMatch = command.match(/\b(change password|passwd|password)(?: for)? ([^\s]*)/i);
+    if (passwdMatch) {
+        return passwdMatch[2] ? `passwd ${passwdMatch[9]}` : "passwd";
+    }
+
+    // ECHO COMMAND
+    let echoMatch = command.match(/\b(echo|print|say|output) (.+)/i);
+    if (echoMatch) {
+        return `echo ${echoMatch[1]}`;
+    }
+
+    // SYSTEM INFO
+    if (/\b(system info|uname|system|os info|operating system)\b/i.test(command)) {
+        return "uname -a";
+    }
+
+    // If no pattern matched, return the original command
+    return command;
+}
+
+/* --- Update status message for the natural language input --- */
+updateNLStatus(text, color = 'var(--success)') {
+    if (this.nlStatus) {
+        this.nlStatus.textContent = text;
+        this.nlStatus.style.color = color;
+    }
+}
+
     /* === Voice Recognition Initialization (Additive) === */
 initVoiceRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
